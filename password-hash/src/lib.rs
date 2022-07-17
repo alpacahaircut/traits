@@ -24,6 +24,8 @@
 extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
+#[cfg(feature = "serde_interop")]
+extern crate serde;
 
 #[cfg(feature = "rand_core")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
@@ -388,5 +390,86 @@ impl FromStr for PasswordHashString {
 impl fmt::Display for PasswordHashString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
+    }
+}
+
+#[cfg(feature = "serde_interop")]
+impl<'a> serde::Serialize for PasswordHash<'a>{
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where 
+        S:serde::Serializer,
+    {
+        serializer.serialize_str(self.serialize().as_str())
+    }
+}
+
+#[cfg(feature = "serde_interop")]
+struct PasswordHashVisitor;
+
+#[cfg(feature = "serde_interop")]
+impl<'de> serde::de::Visitor<'de> for PasswordHashVisitor {
+    type Value = PasswordHash<'de>;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result{
+        formatter.write_str("a well-formated PHC string")
+    }
+
+    fn visit_borrowed_str<E>(self, value:&'de str) -> core::result::Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        PasswordHash::try_from(value)
+            .map_err(|e| serde::de::Error::invalid_value(serde::de::Unexpected::Str(value), &self))
+    }
+}
+
+#[cfg(feature = "serde_interop")]
+impl<'de> serde::Deserialize<'de> for PasswordHash<'de>{
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where 
+        D:serde::Deserializer<'de>
+    {
+        deserializer.deserialize_str(PasswordHashVisitor)
+    }
+}
+
+#[cfg(feature = "serde_interop")]
+impl<'a> serde::Serialize for PasswordHashString{
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where 
+        S:serde::Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
+#[cfg(feature = "serde_interop")]
+struct PasswordHashStringVisitor;
+
+#[cfg(feature = "serde_interop")]
+impl<'de> serde::de::Visitor<'de> for PasswordHashStringVisitor {
+    type Value = PasswordHashString;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result{
+        formatter.write_str("a well-formated PHC string")
+    }
+
+    fn visit_str<E>(self, value:&str) -> core::result::Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        PasswordHashString::new(value).map_err(
+            |e| serde::de::Error::invalid_value(serde::de::Unexpected::Str(value), &self)
+        )
+    }
+}
+
+#[cfg(feature = "serde_interop")]
+impl<'de> serde::Deserialize<'de> for PasswordHashString{
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where 
+        D:serde::Deserializer<'de>
+    {
+        deserializer.deserialize_str(PasswordHashStringVisitor)
     }
 }

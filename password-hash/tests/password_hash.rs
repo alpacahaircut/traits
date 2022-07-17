@@ -5,6 +5,12 @@
 //! of the conditions.
 
 use password_hash::{Ident, ParamsString, PasswordHash, Salt};
+#[cfg( feature = "serde_interop" )]
+use password_hash::PasswordHashString;
+
+#[cfg( feature = "serde_interop" )]
+use serde_test::{Token, assert_tokens};
+
 
 const EXAMPLE_ALGORITHM: Ident = Ident::new_unwrap("argon2d");
 const EXAMPLE_SALT: &str = "saltsaltsaltsaltsalt";
@@ -144,3 +150,47 @@ fn all_fields() {
     let ph2 = PasswordHash::try_from(s.as_str()).unwrap();
     assert_eq!(ph, ph2);
 }
+
+#[cfg( feature = "serde_interop" )]
+#[test]
+fn serde_passwordhash(){
+    let ph = PasswordHash {
+        algorithm: EXAMPLE_ALGORITHM,
+        version: None,
+        params: example_params(),
+        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
+        hash: Some(EXAMPLE_HASH.try_into().unwrap()),
+    };
+
+    assert_tokens(&ph, &[
+        Token::BorrowedStr("$argon2d$a=1,b=2,c=3$saltsaltsaltsaltsalt$hashhashhashhashhashhashhashhashhashhashhas")
+    ]);
+}
+
+
+#[cfg( feature = "serde_interop" )]
+#[test]
+fn serde_passwordhashstring(){
+    let phs = PasswordHashString::new(
+        "$argon2d$a=1,b=2,c=3$saltsaltsaltsaltsalt$hashhashhashhashhashhashhashhashhashhashhas"
+    ).unwrap();
+
+    assert_tokens(&phs, &[
+        Token::Str("$argon2d$a=1,b=2,c=3$saltsaltsaltsaltsalt$hashhashhashhashhashhashhashhashhashhashhas")
+    ]);
+
+    let ph = PasswordHash {
+        algorithm: EXAMPLE_ALGORITHM,
+        version: None,
+        params: example_params(),
+        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
+        hash: Some(EXAMPLE_HASH.try_into().unwrap()),
+    };
+
+    let phs2 = ph.serialize();
+
+    assert_tokens(&phs2, &[ 
+        Token::Str("$argon2d$a=1,b=2,c=3$saltsaltsaltsaltsalt$hashhashhashhashhashhashhashhashhashhashhas")
+    ])
+}
+
