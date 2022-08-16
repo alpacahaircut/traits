@@ -410,7 +410,7 @@ struct PasswordHashVisitor;
 impl<'de> serde::de::Visitor<'de> for PasswordHashVisitor {
     type Value = PasswordHash<'de>;
 
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result{
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result{
         formatter.write_str("a well-formated PHC string")
     }
 
@@ -419,12 +419,12 @@ impl<'de> serde::de::Visitor<'de> for PasswordHashVisitor {
         E: serde::de::Error,
     {
         PasswordHash::try_from(value)
-            .map_err(|e| serde::de::Error::invalid_value(serde::de::Unexpected::Str(value), &self))
+            .map_err(|_e| serde::de::Error::invalid_value(serde::de::Unexpected::Str(value), &self))
     }
 }
 
 #[cfg(feature = "serde_interop")]
-impl<'de> serde::Deserialize<'de> for PasswordHash<'de>{
+impl<'de:'a, 'a> serde::Deserialize<'de> for PasswordHash<'a>{
     fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
     where 
         D:serde::Deserializer<'de>
@@ -434,7 +434,7 @@ impl<'de> serde::Deserialize<'de> for PasswordHash<'de>{
 }
 
 #[cfg(feature = "serde_interop")]
-impl<'a> serde::Serialize for PasswordHashString{
+impl serde::Serialize for PasswordHashString{
     fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
     where 
         S:serde::Serializer,
@@ -450,7 +450,7 @@ struct PasswordHashStringVisitor;
 impl<'de> serde::de::Visitor<'de> for PasswordHashStringVisitor {
     type Value = PasswordHashString;
 
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result{
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result{
         formatter.write_str("a well-formated PHC string")
     }
 
@@ -459,7 +459,7 @@ impl<'de> serde::de::Visitor<'de> for PasswordHashStringVisitor {
         E: serde::de::Error,
     {
         PasswordHashString::new(value).map_err(
-            |e| serde::de::Error::invalid_value(serde::de::Unexpected::Str(value), &self)
+            |_e| serde::de::Error::invalid_value(serde::de::Unexpected::Str(value), &self)
         )
     }
 }
