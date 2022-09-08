@@ -24,8 +24,8 @@
 extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
-#[cfg(feature = "serde_interop")]
-extern crate serde;
+#[cfg(feature = "serde")]
+extern crate serde_cr as serde;
 
 #[cfg(feature = "rand_core")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
@@ -236,7 +236,7 @@ impl<'a> PasswordHash<'a> {
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     pub fn serialize(&self) -> PasswordHashString {
         self.into()
-    }
+    } 
 }
 
 // Note: this uses `TryFrom` instead of `FromStr` to support a lifetime on
@@ -393,7 +393,7 @@ impl fmt::Display for PasswordHashString {
     }
 }
 
-#[cfg(feature = "serde_interop")]
+#[cfg(feature = "serde")]
 impl<'a> serde::Serialize for PasswordHash<'a>{
     fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
     where 
@@ -403,10 +403,10 @@ impl<'a> serde::Serialize for PasswordHash<'a>{
     }
 }
 
-#[cfg(feature = "serde_interop")]
+#[cfg(feature = "serde")]
 struct PasswordHashVisitor;
 
-#[cfg(feature = "serde_interop")]
+#[cfg(feature = "serde")]
 impl<'de> serde::de::Visitor<'de> for PasswordHashVisitor {
     type Value = PasswordHash<'de>;
 
@@ -423,7 +423,7 @@ impl<'de> serde::de::Visitor<'de> for PasswordHashVisitor {
     }
 }
 
-#[cfg(feature = "serde_interop")]
+#[cfg(feature = "serde")]
 impl<'de:'a, 'a> serde::Deserialize<'de> for PasswordHash<'a>{
     fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
     where 
@@ -433,7 +433,7 @@ impl<'de:'a, 'a> serde::Deserialize<'de> for PasswordHash<'a>{
     }
 }
 
-#[cfg(feature = "serde_interop")]
+#[cfg(feature = "serde")]
 impl serde::Serialize for PasswordHashString{
     fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
     where 
@@ -443,10 +443,10 @@ impl serde::Serialize for PasswordHashString{
     }
 }
 
-#[cfg(feature = "serde_interop")]
+#[cfg(feature = "serde")]
 struct PasswordHashStringVisitor;
 
-#[cfg(feature = "serde_interop")]
+#[cfg(feature = "serde")]
 impl<'de> serde::de::Visitor<'de> for PasswordHashStringVisitor {
     type Value = PasswordHashString;
 
@@ -464,7 +464,7 @@ impl<'de> serde::de::Visitor<'de> for PasswordHashStringVisitor {
     }
 }
 
-#[cfg(feature = "serde_interop")]
+#[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for PasswordHashString{
     fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
     where 

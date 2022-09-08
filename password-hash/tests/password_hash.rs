@@ -5,10 +5,10 @@
 //! of the conditions.
 
 use password_hash::{Ident, ParamsString, PasswordHash, Salt};
-#[cfg( feature = "serde_interop" )]
+#[cfg( feature = "serde" )]
 use password_hash::PasswordHashString;
 
-#[cfg( feature = "serde_interop" )]
+#[cfg( feature = "serde" )]
 use serde_test::{Token, assert_tokens};
 
 
@@ -151,7 +151,7 @@ fn all_fields() {
     assert_eq!(ph, ph2);
 }
 
-#[cfg( feature = "serde_interop" )]
+#[cfg( feature = "serde" )]
 #[test]
 fn serde_passwordhash(){
     let ph = PasswordHash {
@@ -168,7 +168,7 @@ fn serde_passwordhash(){
 }
 
 
-#[cfg( feature = "serde_interop" )]
+#[cfg( feature = "serde" )]
 #[test]
 fn serde_passwordhashstring(){
     let phs = PasswordHashString::new(
